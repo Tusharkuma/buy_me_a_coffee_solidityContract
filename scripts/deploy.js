@@ -1,17 +1,16 @@
-const { ethers } = require("ethers"); // importing ethers library to file
+const { ethers } = require("hardhat"); // importing ethers library to file
 const hre = require("hardhat");  // importing hardhat to file
 
 async function main() {
 
-    const coffee = await hre.ethers.deployContract("coffee");
-    const Coffee = await coffee.deploy("Hello, Hardhat!");
+    const coffee = await hre.ethers.getContractFactory("coffee");
+    const Coffee = await coffee.deploy();
+    await Coffee.waitForDeployment();
 
-    await Coffee.deployed();
-
-    console.log("coffee contract deployed to: ", Coffee.address);
+    console.log(`coffee contract deployed to: ${Coffee.address}`);
 
     const buy = await Coffee.functions.buyCoffee({
-        value: ethers.utils.parseEther("1.0")
+        value: ethers.utils.parseEther("1.0"),
     });
 
     console.log(buy); //
@@ -23,7 +22,11 @@ async function main() {
     await withdraw.wait();
     console.log( await Coffee.providers.getBalance(Coffee.address)); //show the balance in Coffee contract
     
-
 }
 
 main()
+    .then(() => process.exit(0))
+    .catch((error) =>    {
+        console.error(error);
+        process.exit("1");  
+    });
